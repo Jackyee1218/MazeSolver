@@ -20,7 +20,7 @@ This project preprocesses a maze image, extracts its skeleton, and applies Bread
 
 ## How to Use
 
-Follow these steps to solve a maze:
+Follow these steps to solve a maze: 0. Execute **MazeApp.py**
 
 1. Click **Open** to load a maze image.
 2. Click **Set** to enable start and end point selection.
