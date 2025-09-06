@@ -9,25 +9,22 @@ from skimage.morphology import skeletonize
 
 class MazeModel:
     def __init__(self):
-        # 原始圖片
+        # Original image
         self.original_image = None
-        # 用於顯示在左側面板的圖片
+        # left image
         self.display_image = None
-        # 經過二值化、骨架化處理後的迷宮圖片
+        # right image(thresholding, skeletonizated image)
         self.maze_image = None
-        # 用來重置的迷宮圖片備份
+        # backup of the right image(reset without re-preprocessing)
         self.processed_maze_backup = None
 
-        # 座標
         self.start_pos = None
         self.end_pos = None
 
-        # 顏色
         self.start_color = (107, 154, 205)
         self.end_color = (174, 205, 107)
 
     def load_image(self, file_path):
-        """載入並預處理圖片"""
         if not file_path:
             return False, None, None
 
@@ -37,14 +34,18 @@ class MazeModel:
         self.original_image = img.copy()
         self.display_image = img.copy()
 
-        # 迷宮圖片預處理
+        # image preprocessing
         maze_np = np.array(img.convert("L"))
         maze_np = cv2.medianBlur(maze_np, 3)
-        # 簡單的自適應閾值
-        threshold_value = np.mean(maze_np) * 0.8 
-        maze_np = ((maze_np > threshold_value) * 255).astype(np.uint8)
+        # Thresholding
+        # threshold_value = np.mean(maze_np) * 0.8 
+        # maze_np = ((maze_np > threshold_value) * 255).astype(np.uint8)
 
-        # 移除圖片周圍的雜訊邊界
+        # using OTSU thresholding tech
+        _, maze_np = cv2.threshold(maze_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+
+        # medianBlur & fill edge
         edge = self._find_maze_bounds(maze_np)
         maze_np = self._build_edge_barrier(maze_np, edge)
         maze_np = cv2.medianBlur(maze_np, 3)
@@ -56,7 +57,6 @@ class MazeModel:
         return True, self.display_image, self.maze_image
     
     def set_point(self, pos):
-        """設置起點和終點"""
         if self.display_image is None:
             return None
             
@@ -74,7 +74,6 @@ class MazeModel:
         return None
 
     def reset(self):
-        """重置所有狀態"""
         if self.original_image:
             self.display_image = self.original_image.copy()
             self.maze_image = self.processed_maze_backup.copy()
@@ -83,12 +82,10 @@ class MazeModel:
         return None, None
         
     def reset_points(self):
-        """只重置起點和終點"""
         self.start_pos = None
         self.end_pos = None
 
     def skeletonize(self):
-        """對迷宮圖片進行骨架化處理"""
         if self.processed_maze_backup is None:
             return None, 0.0
 
@@ -183,7 +180,6 @@ class MazeModel:
         return (path_y[min_index], path_x[min_index])
 
     def _bfs(self, img_np, start_yx, end_yx):
-        """廣度優先搜索演算法"""
         height, width = img_np.shape
         visited = np.zeros_like(img_np, dtype=bool)
         q = Queue()
@@ -211,11 +207,10 @@ class MazeModel:
                     new_path = path + [(next_y, next_x)]
                     q.put(((next_y, next_x), new_path))
         
-        return [], all_visited_nodes # 找不到路徑
+        return [], all_visited_nodes # no path found
 
     @staticmethod
     def _gradient(start_rgb, end_rgb, t):
-        """計算漸變顏色"""
         r = int(start_rgb[0] + t * (end_rgb[0] - start_rgb[0]))
         g = int(start_rgb[1] + t * (end_rgb[1] - start_rgb[1]))
         b = int(start_rgb[2] + t * (end_rgb[2] - start_rgb[2]))

@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 from color import BACKGROUND, DARK_COLOR, BTN_COLOR, BORDER
 
 load_dotenv()
-
-# --- 常數 ---
-ICON_PATH = os.getenv("ICON_PATH") # 提供一個預設路徑
+ICON_PATH = os.getenv("ICON_PATH") 
 
 class MainView(tk.Frame):
     """All GUI"""
@@ -59,7 +57,7 @@ class ImageDisplayFrame(tk.Frame):
         if pil_image is None: return
         tk_image = ImageTk.PhotoImage(pil_image)
         label_widget.config(image=tk_image, width=pil_image.width, height=pil_image.height)
-        label_widget.image = tk_image # Keep a reference!
+        label_widget.image = tk_image # Keep a reference
 
 class ButtonFrame(tk.Frame):
     """Button"""
@@ -110,7 +108,6 @@ class TimeFrame(tk.Frame):
         
 
 class StatusFrame(tk.Frame):
-    """顯示狀態(AC/WA/WAIT)的框架"""
     def __init__(self, master):
         super().__init__(master, bg=BACKGROUND)
         self.grid_columnconfigure(0, weight=1)
