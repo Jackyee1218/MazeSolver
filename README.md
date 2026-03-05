@@ -1,4 +1,4 @@
-# MazeSolver
+c# MazeSolver
 
 A web app that solves maze images. Upload a maze, set a start and end point, and watch the solution path animate in real time.
 
@@ -19,6 +19,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Then simply run:
 ```bash
+uv sync
 python dev.py
 ```
 
