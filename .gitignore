@@ -1,2 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+
+# uv
+.uv/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Environment
 .env
-__pycache__
+.env.local
+
+# OS
+.DS_Store
