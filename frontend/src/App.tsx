@@ -117,7 +117,7 @@ export default function App() {
     if (!state.pendingStart) {
       // First click → draw start marker optimistically, wait for second click
       setState((s) => ({ ...s, pendingStart: [x, y] }))
-      displayCanvasRef.current?.drawMarker(x, y, 'rgb(107,154,205)')
+      displayCanvasRef.current?.drawMarker(x, y, 'rgb(20,140,40)')
     } else {
       // Second click → end point, send both to backend
       const start = state.pendingStart

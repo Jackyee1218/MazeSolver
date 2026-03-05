@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+import signal
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -19,24 +21,48 @@ class ServiceRunner:
         self.command = command
         self.cwd = cwd
         self.process: subprocess.Popen[str] | None = None
+        self._output_thread: threading.Thread | None = None
 
     def start(self) -> None:
         print(f"Starting {self.name}...")
+        env = os.environ.copy()
+        env["FORCE_COLOR"] = "1"  # keep colored output even through pipe
         self.process = subprocess.Popen(
             self.command,
             shell=True,
             cwd=self.cwd,
-            env=os.environ.copy(),
+            env=env,
+            start_new_session=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
         )
+        self._output_thread = threading.Thread(target=self._stream_output, daemon=True)
+        self._output_thread.start()
+
+    def _stream_output(self) -> None:
+        assert self.process and self.process.stdout
+        for line in self.process.stdout:
+            print(line, end="", flush=True)
 
     def stop(self) -> None:
         if self.process and self.process.poll() is None:
             print(f"Stopping {self.name}...")
-            self.process.terminate()
+            try:
+                pgid = os.getpgid(self.process.pid)
+                os.killpg(pgid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
             try:
                 self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                self.process.kill()
+                try:
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+        if self._output_thread:
+            self._output_thread.join(timeout=3)
 
     def ensure_running(self) -> None:
         if self.process and self.process.poll() is not None:

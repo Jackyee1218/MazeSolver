@@ -209,8 +209,12 @@ canvas.clickable {
 }
 
 .hint-step {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: #8ab4f8;
+  border-color: #5a7ec8;
+}
+
+.hint-step strong {
+  color: #a8c8fc;
 }
 
 /* Upload area */

@@ -9,9 +9,9 @@ from skimage.morphology import skeletonize as ski_skeletonize
 
 
 MAX_SIZE = 512
-START_COLOR = (107, 154, 205)  # blue marker
-END_COLOR = (174, 205, 107)    # green marker
-POINT_RADIUS = 5
+START_COLOR = (20, 140, 40)   # dark green marker
+END_COLOR = (20, 140, 40)     # dark green marker
+POINT_RADIUS = 10
 
 
 def _pil_to_b64(img: Image.Image) -> str:
@@ -29,9 +29,9 @@ def _resize(img: Image.Image) -> Image.Image:
 
 
 def _find_maze_bounds(img_np: np.ndarray) -> tuple[int, int, int, int]:
-    """Return (left, right, top, bottom) of white pixel bounding box."""
-    rows = np.any(img_np == 255, axis=1)
-    cols = np.any(img_np == 255, axis=0)
+    """Return (left, right, top, bottom) bounding box of maze walls (black pixels)."""
+    rows = np.any(img_np == 0, axis=1)
+    cols = np.any(img_np == 0, axis=0)
     top, bottom = np.where(rows)[0][[0, -1]]
     left, right = np.where(cols)[0][[0, -1]]
     return int(left), int(right), int(top), int(bottom)
@@ -92,12 +92,13 @@ def skeletonize(maze_np: np.ndarray) -> tuple[np.ndarray, Image.Image, float]:
 
 
 def draw_point(display_image: Image.Image, pos_xy: tuple[int, int], color: tuple[int, int, int]) -> Image.Image:
-    """Draw a filled circle marker on a copy of the display image."""
+    """Draw an X marker on a copy of the display image."""
     img = display_image.copy()
     draw = ImageDraw.Draw(img)
     x, y = pos_xy
     r = POINT_RADIUS
-    draw.ellipse((x - r, y - r, x + r, y + r), fill=color)
+    draw.line([(x - r, y - r), (x + r, y + r)], fill=color, width=4)
+    draw.line([(x + r, y - r), (x - r, y + r)], fill=color, width=4)
     return img
 
 

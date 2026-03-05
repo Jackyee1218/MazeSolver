@@ -12,8 +12,8 @@ export interface MazeCanvasHandle {
   drawPath: (nodes: [number, number][]) => void
 }
 
-// Target ~3 seconds for path animation regardless of path length
-const ANIM_FRAMES = 180
+// Target ~6 seconds for path animation regardless of path length
+const ANIM_FRAMES = 360
 
 export const MazeCanvas = forwardRef<MazeCanvasHandle, Props>(
   ({ imageSrc, label, clickable, onCanvasClick }, ref) => {
@@ -44,10 +44,16 @@ export const MazeCanvas = forwardRef<MazeCanvasHandle, Props>(
       drawMarker(x: number, y: number, color: string) {
         const ctx = canvasRef.current?.getContext('2d')
         if (!ctx) return
-        ctx.fillStyle = color
+        const r = 10
+        ctx.strokeStyle = color
+        ctx.lineWidth = 4
+        ctx.lineCap = 'round'
         ctx.beginPath()
-        ctx.arc(x, y, 5, 0, Math.PI * 2)
-        ctx.fill()
+        ctx.moveTo(x - r, y - r)
+        ctx.lineTo(x + r, y + r)
+        ctx.moveTo(x + r, y - r)
+        ctx.lineTo(x - r, y + r)
+        ctx.stroke()
       },
 
       drawPath(nodes: [number, number][]) {
@@ -57,8 +63,8 @@ export const MazeCanvas = forwardRef<MazeCanvasHandle, Props>(
         const nodesPerFrame = Math.max(1, Math.ceil(nodes.length / ANIM_FRAMES))
         let index = 1
 
-        ctx.strokeStyle = '#00cc44'
-        ctx.lineWidth = 3
+        ctx.strokeStyle = '#cc2200'
+        ctx.lineWidth = 4
         ctx.lineJoin = 'round'
         ctx.lineCap = 'round'
 
